@@ -1,84 +1,39 @@
 import os
-import sys
 import csv
-import psycopg2
-from dateutil.relativedelta import relativedelta
-#pifrom config import config
-import requests, zipfile
-from io import StringIO
-import pandas as pd
-import datetime
-from datetime import *
-from pandas import DataFrame
-from datetime import datetime
 import shutil
 import traceback
-from lxml import html
-import ast
-import json
-from haralyzer import HarParser, HarPage
-
-import re
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from shutil import copyfile, move
-
-import datetime, calendar, dateparser
-from datetime import *
-from dateutil.relativedelta import relativedelta
-import time
-import xlrd
-import tabula
-# from tabula import read_pdf
 import pandas as pd
-import psycopg2
-from config import *
-from selenium.webdriver.firefox.options import Options
-import glob
-import camelot
-
-from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFPageInterpreter
-from pdfminer.pdfinterp import PDFResourceManager
-from pdfminer.pdfpage import PDFPage
-
-#from simple_NER.rules.rx import RegexNER
-
-from googletrans import Translator
-import numpy as np
-import statistics
-import shutil
-from selenium.webdriver.common.action_chains import ActionChains
+import datetime
 
 
 def download_car(dest_path):
-    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/','https://www.classic.com/m/porsche/911/993/carrera/cabriolet-manual/','https://www.classic.com/m/porsche/911/993/turbo/']
+    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/',
+               'https://www.classic.com/m/porsche/911/993/carrera/cabriolet-manual/',
+               'https://www.classic.com/m/porsche/911/993/turbo/']
 
     options = Options()
     options.headless = True
-    profile = webdriver.FirefoxProfile()
-    
-    profile.set_preference("browser.download.folderList", 2)
-    profile.set_preference("browser.download.manager.showWhenStarting", False)
-    profile.set_preference("browser.download.dir", dest_path)  
-    profile.set_preference("browser.helperApps.neverAsk.saveToDisk",
-                           "application/octet-stream, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/x-excel, application/x-msexcel, application/excel, application/vnd.ms-excel")  
-    profile.set_preference("browser.helperApps.neverAsk.openFile", "application/octet-stream")
 
-    driver = webdriver.Firefox(firefox_profile=profile, options=options,
-                    executable_path='/home/airflow/airflow/scripts/etl_script/staging/gecko/geckodriver')
+    prefs = {
+        "download.default_directory": dest_path,
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "safebrowsing.enabled": True
+    }
+    options.add_experimental_option("prefs", prefs)
+
+    driver = webdriver.Chrome()
+    # Khởi tạo trình duyệt Chrome
+    
     for url in arr_url:
         driver.get(url)
         driver.maximize_window()
-        print('Starting to requests %s' %url)
+        print('Starting to requests %s' % url)
         wait = WebDriverWait(driver, 2)
         try:
             driver.save_screenshot(dest_path+'screenshot.png')
@@ -129,8 +84,6 @@ def download_car(dest_path):
                 }])
                 df_4=pd.concat([df_4,df_temp])
             df_4=df_4.reset_index(drop=True)
-
-
 
             child = driver.find_elements_by_xpath ("//*[@class= 'text-xl leading-5 font-medium table:text-secondary table:text-base flex-1']")
             arr_car=[]
@@ -209,13 +162,8 @@ def download_car(dest_path):
                     df_temp['Number of videos in listing']=None
                     df_temp['Total number of bids']=None
 
-                
-
-
-
                 df_5=pd.concat([df_5, df_temp])
 
-                # break
             print(df_5)
             df_5=df_5.reset_index(drop=True)
             df=pd.concat([df_1,df_2, df_3, df_4,df_5],axis=1)
@@ -228,7 +176,6 @@ def download_car(dest_path):
     driver.quit()
 
 if __name__ == '__main__':   
-
-    dest_path = os.path.dirname(os.path.realpath(__file__))  + '/data_source/car_test/'
+    dest_path = os.path.dirname(os.path.realpath(__file__)) + '/data_source/car_test/'
     print(dest_path)
     download_car(dest_path)

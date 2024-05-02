@@ -14,6 +14,10 @@ cookies = {
     'AWSALB': 'fXzNQCcMNMry3HnHQpbET95mFi1jRTm/Ksz8pL7Yrl0r3/W71ZGhbWn9IISqAtddrpi7thkMwd9hfNqLsOshzF2oSApSnALwegyENwsGXkaPtrsFXw5CmragWse1',
     'AWSALBCORS': 'fXzNQCcMNMry3HnHQpbET95mFi1jRTm/Ksz8pL7Yrl0r3/W71ZGhbWn9IISqAtddrpi7thkMwd9hfNqLsOshzF2oSApSnALwegyENwsGXkaPtrsFXw5CmragWse1',
 }
+'''
+Cookies
+Cookies là những dữ liệu nhỏ được máy chủ web gửi đến trình duyệt của người dùng, và sau đó trình duyệt sẽ gửi lại những cookies này tới máy chủ trong mỗi yêu cầu HTTP tiếp theo. Cookies thường được sử dụng để lưu trữ thông tin về phiên làm việc của người dùng, sở thích, và các hoạt động trước đó trên trang web. Trong scraping, cookies có thể cần thiết để duy trì trạng thái đăng nhập, tùy chọn ngôn ngữ, hoặc các tùy chọn khác đã được thiết lập trong các lần truy cập trước đó.
+'''
 
 headers = {
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -31,27 +35,32 @@ headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36 Edg/123.0.0.0',
 }
 
+'''
 
-file_path = r"page_links.txt"
+'''
+
+file_path = r"D:\GitHub\Work-Experiences\Tuan Loc Commodities\2. Scrapping\2.1 My Own Scrapping Code\page_links.txt"
+results = []
 
 with open(file_path, 'r') as file:
     arr_urls = file.read().splitlines()
-    
-results = [] 
 
 for original_url in arr_urls:
-    print (original_url)
-    url = original_url
-    response = requests.get(url, cookies=cookies, headers=headers)
-
+    print(original_url)
+    response = requests.get(original_url, cookies=cookies, headers=headers)
     soup = BeautifulSoup(response.text, 'html.parser')
-
-    # Giả sử element cha chứa cả hai class mà bạn đề cập
-    # Bạn cần xác định element cha này dựa trên cấu trúc HTML cụ thể của trang
-    parent_elements = soup.find_all(class_='group')  # Thay 'parent-class-name' với class của element cha
-s
+    
+    parent_elements = soup.find_all(class_='group')  # Adjust class name to actual HTML structure
+    
     for element in parent_elements:
-        # Tìm element với class 'waves-effect waves-light...'
         child_one = element.find(class_='waves-effect waves-light relative btn-flat btn- flex items-center justify-center mt-2 md:m-0')
-        # Tìm element với class 'w-5 mr-2'
         child_two = element.find(class_='text-xl leading-5 font-medium table:text-secondary table:text-base flex-1')
+
+        href = child_one.get('href') if child_one and child_one.has_attr('href') else "No href"
+        text = child_two.text.strip() if child_two else "No text"
+        
+        if child_one and href != "No href":
+            results.append({'original_link': original_url, 'link_view_listing': href, 'name': text})
+
+df_result = pd.DataFrame(results)
+df_result.to_csv('result.csv', index=False)
