@@ -179,22 +179,3 @@ if __name__ == '__main__':
     dest_path = os.path.dirname(os.path.realpath(__file__)) + '/data_source/car_test/'
     print(dest_path)
     download_car(dest_path)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-tiền phí quản lí 
-làm kiến tập doc 
-thêm folder xác định requiremnt
