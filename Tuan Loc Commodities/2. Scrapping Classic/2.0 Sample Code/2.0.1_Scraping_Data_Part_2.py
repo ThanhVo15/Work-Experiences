@@ -60,25 +60,35 @@ import statistics
 import shutil
 from selenium.webdriver.common.action_chains import ActionChains
 
+import traceback
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+
 
 def download_car(dest_path):
-    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/','https://www.classic.com/m/porsche/911/993/carrera/cabriolet-manual/','https://www.classic.com/m/porsche/911/993/turbo/']
+    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/']
+    if not os.path.exists(dest_path):
+        os.makedirs(dest_path)
+    
+    # Specify the path to chromedriver.exe
+    chromedriver_path = ChromeDriverManager().install()
+    save_path = r'D:\GitHub\Work-Experiences\Tuan Loc Commodities\2. Scrapping Classic\2.0 Sample Code'
 
-    options = Options()
-    options.headless = True
-    firefox_profile = webdriver.FirefoxProfile()
+    chrome_options = webdriver.ChromeOptions()
+    # chrome_options.add_argument('--headless')s
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
 
-    # Cấu hình các tùy chọn tải xuống từ firefox_profile
-    firefox_profile.set_preference("browser.download.folderList", 2)
-    firefox_profile.set_preference("browser.download.manager.showWhenStarting", False)
-    firefox_profile.set_preference("browser.download.dir", dest_path)  
-    firefox_profile.set_preference("browser.helperApps.neverAsk.saveToDisk",
-                                "application/octet-stream, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/x-excel, application/x-msexcel, application/excel, application/vnd.ms-excel")  
-    firefox_profile.set_preference("browser.helperApps.neverAsk.openFile", "application/octet-stream")
+    chrome_options.add_experimental_option("prefs", {
+    "download.default_directory": save_path,
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "safebrowsing.enabled": True
+    })
 
-    # Truyền options vào WebDriver
-    driver = webdriver.Firefox(firefox_profile=firefox_profile, options=options, executable_path=GeckoDriverManager().install())
-
+    driver = webdriver.Chrome(service=Service(chromedriver_path), options=chrome_options)
     for url in arr_url:
         driver.get(url)
         driver.maximize_window()
@@ -236,3 +246,5 @@ if __name__ == '__main__':
     dest_path = os.path.dirname(os.path.realpath(__file__))  + '/data_source/car_test/'
     print(dest_path)
     download_car(dest_path)
+
+
