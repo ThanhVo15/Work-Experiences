@@ -66,16 +66,19 @@ def download_car(dest_path):
 
     options = Options()
     options.headless = True
-    profile = webdriver.FirefoxProfile()
-    
-    profile.set_preference("browser.download.folderList", 2)
-    profile.set_preference("browser.download.manager.showWhenStarting", False)
-    profile.set_preference("browser.download.dir", dest_path)  
-    profile.set_preference("browser.helperApps.neverAsk.saveToDisk",
-                           "application/octet-stream, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/x-excel, application/x-msexcel, application/excel, application/vnd.ms-excel")  
-    profile.set_preference("browser.helperApps.neverAsk.openFile", "application/octet-stream")
+    firefox_profile = webdriver.FirefoxProfile()
 
-    driver = webdriver.Firefox(firefox_profile=profile, options=options,executable_path=GeckoDriverManager().install())
+    # Cấu hình các tùy chọn tải xuống từ firefox_profile
+    firefox_profile.set_preference("browser.download.folderList", 2)
+    firefox_profile.set_preference("browser.download.manager.showWhenStarting", False)
+    firefox_profile.set_preference("browser.download.dir", dest_path)  
+    firefox_profile.set_preference("browser.helperApps.neverAsk.saveToDisk",
+                                "application/octet-stream, text/csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/x-excel, application/x-msexcel, application/excel, application/vnd.ms-excel")  
+    firefox_profile.set_preference("browser.helperApps.neverAsk.openFile", "application/octet-stream")
+
+    # Truyền options vào WebDriver
+    driver = webdriver.Firefox(firefox_profile=firefox_profile, options=options, executable_path=GeckoDriverManager().install())
+
     for url in arr_url:
         driver.get(url)
         driver.maximize_window()
