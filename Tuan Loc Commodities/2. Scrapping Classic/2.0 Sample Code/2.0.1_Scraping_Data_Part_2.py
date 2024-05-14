@@ -66,9 +66,13 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
+# Read the URLs from a text file
+file_path = r"D:\GitHub\Work-Experiences\Tuan Loc Commodities\2. Scrapping Classic\2.1 My Own Scrapping Code\2.1.2 Scraping Vehicle History\found links.txt"
+
+with open(file_path, 'r') as file:
+    arr_url = file.read().splitlines()
 
 def download_car(dest_path):
-    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/']
     if not os.path.exists(dest_path):
         os.makedirs(dest_path)
     
@@ -165,6 +169,8 @@ def download_car(dest_path):
                 print(arr_temp)
                 index_1=arr_temp.index('Year')
                 index_2=arr_temp.index('Int. Color Group')
+            
+
 
                 arr_after=arr_temp[index_1:index_2+2]
                 print(arr_after)
@@ -246,5 +252,3 @@ if __name__ == '__main__':
     dest_path = os.path.dirname(os.path.realpath(__file__))  + '/data_source/car_test/'
     print(dest_path)
     download_car(dest_path)
-
-
