@@ -1,158 +1,42 @@
 import os
-import sys
 import csv
-import psycopg2
-from dateutil.relativedelta import relativedelta
-#from config import config
-import requests, zipfile
-from io import StringIO
-import pandas as pd
-import datetime
-from datetime import *
-from pandas import DataFrame
-from datetime import datetime
 import shutil
 import traceback
-from lxml import html
-import ast
-import json
-from haralyzer import HarParser, HarPage
-
-import re
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
-# from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-from shutil import copyfile, move
-
-import datetime, calendar, dateparser
-from datetime import *
-from dateutil.relativedelta import relativedelta
-import time
-import xlrd
-import tabula
-#from tabula import read_pdf
 import pandas as pd
-import psycopg2
-#from config import *
-from selenium.webdriver.firefox.options import Options
-import glob
-#import camelot
+import datetime
 
-from pdfminer.converter import TextConverter
-from pdfminer.pdfinterp import PDFPageInterpreter
-from pdfminer.pdfinterp import PDFResourceManager
-from pdfminer.pdfpage import PDFPage
-
-#from simple_NER.rules.rx import RegexNER
-
-#from googletrans import Translator
-import numpy as np
-import statistics
-import shutil
-from selenium.webdriver.common.action_chains import ActionChains
-
-import traceback
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-
-# Read the URLs from a text file
-file_path = r"D:\GitHub\Work-Experiences\Tuan Loc Commodities\2. Scrapping Classic\2.1 My Own Scrapping Code\2.1.2 Scraping Vehicle History\found links.txt"
-
-with open(file_path, 'r') as file:
-    arr_url = file.read().splitlines()
 
 def download_car(dest_path):
-    if not os.path.exists(dest_path):
-        os.makedirs(dest_path)
-    
-    # Specify the path to chromedriver.exe
-    chromedriver_path = ChromeDriverManager().install()
-    save_path = r'D:\GitHub\Work-Experiences\Tuan Loc Commodities\2. Scrapping Classic\2.0 Sample Code'
+    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/']
 
-    chrome_options = webdriver.ChromeOptions()
-    # chrome_options.add_argument('--headless')s
+    chrome_options = Options()
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
-
     chrome_options.add_experimental_option("prefs", {
-    "download.default_directory": save_path,
-    "download.prompt_for_download": False,
-    "download.directory_upgrade": True,
-    "safebrowsing.enabled": True
+        "download.default_directory": dest_path,
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "safebrowsing.enabled": True
     })
 
-    driver = webdriver.Chrome(service=Service(chromedriver_path), options=chrome_options)
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+    # Khởi tạo trình duyệt Chrome
+    
     for url in arr_url:
         driver.get(url)
         driver.maximize_window()
-        print('Starting to requests %s' %url)
+        print('Starting to requests %s' % url)
         wait = WebDriverWait(driver, 2)
         try:
-            driver.save_screenshot(dest_path+'screenshot.png')
-
-            child = driver.find_elements_by_xpath ("//*[@class= 'flex flex-wrap justify-between text-gray-500 table:justify-start table:space-x-3']")
-            df_1=pd.DataFrame()
-            for i in range(len(child)):
-                arr=child[i].text.split('\n')
-                # print(arr)
-                df_temp=pd.DataFrame([{
-                'Mileage':arr[0],
-                'Transmission': arr[1],
-                'Drive Type': arr[2]
-                }])
-                df_1=pd.concat([df_1,df_temp])
-            df_1=df_1.reset_index(drop=True)
-            print(df_1)
-
-            child = driver.find_elements_by_xpath ("//*[@class= 'flex gap-2 items-center text-gray-500']")
-            df_2=pd.DataFrame()
-            for i in range(len(child)):
-                df_temp=pd.DataFrame([{
-                'Selling location':child[i].text
-                }])
-                df_2=pd.concat([df_2,df_temp])
-            df_2=df_2.reset_index(drop=True)
-
-            child = driver.find_elements_by_xpath ("//*[@class= 'debug:bg-emerald-100 w-1/2 table:flex-1 table:text-left table:space-y-1']")
-            df_3=pd.DataFrame()
-            for i in range(len(child)):
-                arr=child[i].text.split('\n')
-                price=None
-
-                if len(arr)==2:
-                    price=arr[1]
-                df_temp=pd.DataFrame([{
-                'Sold':arr[0],
-                'Selling price':price
-                }])
-                df_3=pd.concat([df_3,df_temp])
-            df_3=df_3.reset_index(drop=True)
-
-            child = driver.find_elements_by_xpath ("//*[@class= 'debug:bg-violet-100 text-sm text-gray-500 text-right w-1/2 table:flex-1 table:order-last ']")
-            df_4=pd.DataFrame()
-            for i in range(len(child)):
-                df_temp=pd.DataFrame([{
-                'Date of publication ':datetime.strptime(child[i].text.split('\n')[0],'%b %d, %Y').date(),
-                }])
-                df_4=pd.concat([df_4,df_temp])
-            df_4=df_4.reset_index(drop=True)
-
-
-
             child = driver.find_elements_by_xpath ("//*[@class= 'text-xl leading-5 font-medium table:text-secondary table:text-base flex-1']")
             arr_car=[]
             df_5=pd.DataFrame()
+
             for i in range(len(child)):
                 name=child[i].text
                 href = child[i].get_attribute("href")
@@ -164,14 +48,12 @@ def download_car(dest_path):
                 WebDriverWait(driver, 5)
                 driver.save_screenshot(dest_path+'screenshot_1.png')
                 element = driver.find_elements_by_xpath ("//*[@id='vehicle-tabs']")
-                print(element[0].text)
+                print(element[1].text)
                 arr_temp=element[0].text.split('\n')
                 print(arr_temp)
                 index_1=arr_temp.index('Year')
                 index_2=arr_temp.index('Int. Color Group')
-            
 
-   
                 arr_after=arr_temp[index_1:index_2+2]
                 print(arr_after)
                 # print(len(arr_after))
@@ -203,7 +85,7 @@ def download_car(dest_path):
                             df_temp['Number of videos in listing']=len(child_3)
 
                             element_with_text_bids =driver.find_elements_by_xpath ("//*[translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='bids']")
-                            # element_with_text_bids =driver.find_elements_by_xpath ("//*[@text='bids']")
+                            element_with_text_bids =driver.find_elements_by_xpath ("//*[@text='bids']")
                             if len(element_with_text_bids)>0:
                                 parent_element = element_with_text_bids[0].find_element(By.XPATH, "..")
                                 name_class=parent_element.get_attribute("class")
@@ -229,13 +111,8 @@ def download_car(dest_path):
                     df_temp['Number of videos in listing']=None
                     df_temp['Total number of bids']=None
 
-                
-
-
-
                 df_5=pd.concat([df_5, df_temp])
 
-                # break
             print(df_5)
             df_5=df_5.reset_index(drop=True)
             df=pd.concat([df_1,df_2, df_3, df_4,df_5],axis=1)
@@ -248,7 +125,6 @@ def download_car(dest_path):
     driver.quit()
 
 if __name__ == '__main__':   
-
-    dest_path = os.path.dirname(os.path.realpath(__file__))  + '/data_source/car_test/'
+    dest_path = os.path.dirname(os.path.realpath(__file__)) + '/data_source/car_test/'
     print(dest_path)
     download_car(dest_path)

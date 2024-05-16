@@ -16,18 +16,17 @@ def download_car(dest_path):
                'https://www.classic.com/m/porsche/911/993/carrera/cabriolet-manual/',
                'https://www.classic.com/m/porsche/911/993/turbo/']
 
-    options = Options()
-    options.headless = True
-
-    prefs = {
+    chrome_options = Options()
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_experimental_option("prefs", {
         "download.default_directory": dest_path,
         "download.prompt_for_download": False,
         "download.directory_upgrade": True,
         "safebrowsing.enabled": True
-    }
-    options.add_experimental_option("prefs", prefs)
+    })
 
-    driver = webdriver.Chrome()
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
     # Khởi tạo trình duyệt Chrome
     
     for url in arr_url:
@@ -99,9 +98,9 @@ def download_car(dest_path):
                 WebDriverWait(driver, 5)
                 driver.save_screenshot(dest_path+'screenshot_1.png')
                 element = driver.find_elements_by_xpath ("//*[@id='vehicle-tabs']")
-                # print(element[0].text)
+                print(element[0].text)
                 arr_temp=element[0].text.split('\n')
-                # print(arr_temp)
+                print(arr_temp)
                 index_1=arr_temp.index('Year')
                 index_2=arr_temp.index('Int. Color Group')
 
