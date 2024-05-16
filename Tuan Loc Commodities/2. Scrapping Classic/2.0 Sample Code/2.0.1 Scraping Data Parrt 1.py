@@ -136,7 +136,7 @@ def download_car(dest_path):
                             df_temp['Number of videos in listing']=len(child_3)
 
                             element_with_text_bids =driver.find_elements_by_xpath ("//*[translate(text(),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='bids']")
-                            # element_with_text_bids =driver.find_elements_by_xpath ("//*[@text='bids']")
+                            element_with_text_bids =driver.find_elements_by_xpath ("//*[@text='bids']")
                             if len(element_with_text_bids)>0:
                                 parent_element = element_with_text_bids[0].find_element(By.XPATH, "..")
                                 name_class=parent_element.get_attribute("class")

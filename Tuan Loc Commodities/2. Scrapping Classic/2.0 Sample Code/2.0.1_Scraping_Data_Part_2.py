@@ -171,7 +171,7 @@ def download_car(dest_path):
                 index_2=arr_temp.index('Int. Color Group')
             
 
-
+   
                 arr_after=arr_temp[index_1:index_2+2]
                 print(arr_after)
                 # print(len(arr_after))
