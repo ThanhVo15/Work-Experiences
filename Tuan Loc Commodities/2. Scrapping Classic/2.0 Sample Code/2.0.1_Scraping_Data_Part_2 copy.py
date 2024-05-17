@@ -11,31 +11,12 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 import re
 
-def extract_event_data(data_list):
-    extracted_data = []
-    i = 0
-    while i < len(data_list):
-        if re.match(r'\\ue[0-9a-fA-F]{3}', repr(data_list[i])):
-            try:
-                date = data_list[i + 1]
-                event = ' '.join(data_list[i + 2: i + 6]).replace('  ', ' ')
-                details = data_list[i + 6] + ' ' + data_list[i + 7]
-                extracted_data.append({
-                    'Date': date,
-                    'Event': event,
-                    'Details': details
-                })
-                i += 8
-            except IndexError:
-                i += 1
-        else:
-            i += 1
-    return extracted_data
 
 def download_car(dest_path):
-    arr_url = [
-        'https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/'
-    ]
+    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/'
+               #'https://www.classic.com/m/porsche/911/993/carrera/cabriolet-manual/',
+               #'https://www.classic.com/m/porsche/911/993/turbo/'
+               ]
 
     chrome_options = Options()
     chrome_options.add_argument('--no-sandbox')
@@ -48,7 +29,8 @@ def download_car(dest_path):
     })
 
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
-
+    # Khởi tạo trình duyệt Chrome
+    
     for url in arr_url:
         driver.get(url)
         driver.maximize_window()
@@ -118,34 +100,53 @@ def download_car(dest_path):
                 WebDriverWait(driver, 5)
                 driver.save_screenshot(dest_path+'screenshot_1.png')
                 element = driver.find_elements_by_xpath ("//*[@id='vehicle-tabs']")
-                #print(element[0].text)
+                # print('hihi:', element[0].text)
                 arr_temp=element[0].text.split('\n')
-                #print(arr_temp)
-                index_1=arr_temp.index('Year')
-                index_2=arr_temp.index('Int. Color Group')
+                #print('haha:', arr_temp)
+                 # Extract specification details
+                index_1 = arr_temp.index('Year')
+                index_2 = arr_temp.index('Int. Color Group')
+                arr_spec = arr_temp[index_1:index_2+2]
 
-                arr_after=arr_temp[index_1:index_2+2]
-                print(arr_after)
+                if 'Vehicle History' in arr_temp and 'About Vehicle History data' in arr_temp:
+                    index_3 = arr_temp.index('Vehicle History')
+                    index_4 = arr_temp.index('About Vehicle History data')
+                    arr_his = arr_temp[index_3:index_4]
+                else:
+                    arr_his = []
+
+                print('Specifications:', arr_spec)
+                print('History:', arr_his)
                 # print(len(arr_after))
                 df_temp=pd.DataFrame([{
-                    'Manufacturer':arr_after[3],
-                    'Model Family':arr_after[5],
-                    'Model Generation':arr_after[7],
-                    'Production year ':arr_after[1],
-                    'VIN of the vehicle ':arr_after[23],
-                    'Ext. Color Group':arr_after[-3],
-                    'Int. Color Group':arr_after[-1],
+                    'Manufacturer':arr_spec[3],
+                    'Model Family':arr_spec[5],
+                    'Model Generation':arr_spec[7],
+                    'Production year ':arr_spec[1],
+                    'VIN of the vehicle ':arr_spec[23],
+                    'Ext. Color Group':arr_spec[-3],
+                    'Int. Color Group':arr_spec[-1],
                 }])
 
-                # Extract event data
-                event_data = extract_event_data(arr_temp)
-                for event in event_data:
-                    df_event = pd.DataFrame([{
-                        'Date': event['Date'],
-                        'Event': event['Event'],
-                        'Details': event['Details']
-                    }])
-                    df_5 = pd.concat([df_5, df_event])
+                # Merge code vào đây nha
+                if arr_his:
+                    history_events = []
+                    event_start_indices = [i for i, val in enumerate(arr_his) if val.endswith('2023') or val.endswith('2024')]
+
+                    for i in event_start_indices:
+                        if i + 4 < len(arr_his):
+                            history_events.append({
+                                'Date': arr_his[i],
+                                'Event': arr_his[i + 1] + ' ' + arr_his[i + 2],
+                                'Details': arr_his[i + 3] + ' ' + arr_his[i + 4]
+                            })
+
+                    # Create the DataFrame for vehicle history
+                    df_history_corrected = pd.DataFrame(history_events)
+                    print(df_history_corrected)
+                    for idx, row in df_history_corrected.iterrows():
+                        for key, value in row.items():
+                            df_temp[f'History_{key}_{idx}'] = value
 
                 child_4 = driver.find_elements_by_xpath ("//*[@class='flex text-gray-500 pl-2 ml-auto ']")
                 if len(child_4)>=2: 
@@ -202,7 +203,6 @@ def download_car(dest_path):
 
         except:
             print(traceback.format_exc())
-        
     driver.quit()
 
 if __name__ == '__main__':   

@@ -1,20 +1,22 @@
 import os
-import csv
-import shutil
 import traceback
+import pandas as pd
+from datetime import datetime
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import pandas as pd
-import datetime
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+import re
 
 
 def download_car(dest_path):
-    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/',
-               'https://www.classic.com/m/porsche/911/993/carrera/cabriolet-manual/',
-               'https://www.classic.com/m/porsche/911/993/turbo/']
+    arr_url = ['https://www.classic.com/m/porsche/911/964/carrera-2/coupe-automatic/'
+               #'https://www.classic.com/m/porsche/911/993/carrera/cabriolet-manual/',
+               #'https://www.classic.com/m/porsche/911/993/turbo/'
+               ]
 
     chrome_options = Options()
     chrome_options.add_argument('--no-sandbox')
@@ -98,14 +100,14 @@ def download_car(dest_path):
                 WebDriverWait(driver, 5)
                 driver.save_screenshot(dest_path+'screenshot_1.png')
                 element = driver.find_elements_by_xpath ("//*[@id='vehicle-tabs']")
-                print(element[0].text)
+                # print('hihi:', element[0].text)
                 arr_temp=element[0].text.split('\n')
-                print(arr_temp)
+                # print('haha:', arr_temp)
                 index_1=arr_temp.index('Year')
                 index_2=arr_temp.index('Int. Color Group')
 
                 arr_after=arr_temp[index_1:index_2+2]
-                print(arr_after)
+                print("hehe:", arr_after)
                 # print(len(arr_after))
                 df_temp=pd.DataFrame([{
                     'Manufacturer':arr_after[3],
