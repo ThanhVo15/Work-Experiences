@@ -102,7 +102,7 @@ def download_car(dest_path):
                 element = driver.find_elements_by_xpath ("//*[@id='vehicle-tabs']")
                 # print('hihi:', element[0].text)
                 arr_temp=element[0].text.split('\n')
-                #print('haha:', arr_temp)
+                print('haha:', arr_temp)
                  # Extract specification details
                 index_1 = arr_temp.index('Year')
                 index_2 = arr_temp.index('Int. Color Group')
