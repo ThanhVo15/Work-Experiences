@@ -28,7 +28,7 @@ def download_car(dest_path):
         "safebrowsing.enabled": True
     })
 
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
+    driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_options)
     # Khởi tạo trình duyệt Chrome
     
     for url in arr_url:
@@ -99,9 +99,10 @@ def download_car(dest_path):
                 driver.get(arr_car[i])
                 WebDriverWait(driver, 5)
                 driver.save_screenshot(dest_path+'screenshot_1.png')
-                element = driver.find_elements_by_xpath ("//*[@id='vehicle-tabs']")
+                element = driver.find_elements(By.XPATH, "//*[@id='vehicle-tabs']")
+                if len(element) > 0:
+                    arr_temp = element[0].text.split('\n')
                 # print('hihi:', element[0].text)
-                arr_temp=element[0].text.split('\n')
                 print('haha:', arr_temp)
                  # Extract specification details
                 index_1 = arr_temp.index('Year')
@@ -128,11 +129,10 @@ def download_car(dest_path):
                     'Int. Color Group':arr_spec[-1],
                 }])
 
-                # Merge code vào đây nha
+                # Merge code 
                 if arr_his:
                     history_events = []
-                    event_start_indices = [i for i, val in enumerate(arr_his) if val.endswith('2023') or val.endswith('2024')]
-
+                    event_start_indices = [i for i, val in enumerate(arr_his) if re.search(r'\b\d{4}\b', val)]
                     for i in event_start_indices:
                         if i + 4 < len(arr_his):
                             history_events.append({
@@ -140,8 +140,6 @@ def download_car(dest_path):
                                 'Event': arr_his[i + 1] + ' ' + arr_his[i + 2],
                                 'Details': arr_his[i + 3] + ' ' + arr_his[i + 4]
                             })
-
-                    # Create the DataFrame for vehicle history
                     df_history_corrected = pd.DataFrame(history_events)
                     print(df_history_corrected)
                     for idx, row in df_history_corrected.iterrows():
